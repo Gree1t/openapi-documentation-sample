@@ -1,0 +1,279 @@
+openapi: 3.0.3
+info:
+  title: Task Desk API — Synthetic Documentation Sample
+  version: 1.0.0
+  description: |
+    Fictional API and local fixture created to demonstrate source-backed API documentation.
+    This is not customer work, a production service, or evidence of a completed paid assignment.
+    Data lives in memory and resets on restart. The public token `demo-token` is only a fixture.
+  license:
+    name: MIT
+    url: https://opensource.org/license/mit
+servers:
+  - url: http://127.0.0.1:4010
+    description: Local synthetic fixture only
+security:
+  - bearerAuth: []
+tags:
+  - name: Tasks
+    description: Create and retrieve tasks in the synthetic in-memory workspace.
+paths:
+  /tasks:
+    get:
+      operationId: listTasks
+      summary: List tasks
+      description: |
+        Returns tasks in creation order. `total` counts all tasks matching the filter before
+        applying `limit`. This small fixture has no cursor or offset pagination.
+        Unknown query parameters are ignored; repeated parameters use their first value.
+      tags: [Tasks]
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of tasks returned.
+          schema: {type: integer, minimum: 1, maximum: 100, default: 20}
+          example: 20
+        - name: status
+          in: query
+          description: Optional exact status filter.
+          schema: {type: string, enum: [todo, done]}
+          example: todo
+      responses:
+        '200':
+          description: Matching tasks, possibly empty.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [data, total]
+                properties:
+                  data:
+                    type: array
+                    items: {$ref: '#/components/schemas/Task'}
+                  total: {type: integer, minimum: 0}
+              example:
+                data:
+                  - id: 751e3e2a-d601-487c-b761-0bead19be760
+                    title: Review API documentation
+                    status: todo
+                    createdAt: '2026-10-21T10:00:00.000Z'
+                total: 1
+        '400': {$ref: '#/components/responses/InvalidQuery'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    post:
+      operationId: createTask
+      summary: Create a task
+      description: |
+        Creates a task. If status is omitted it defaults to todo. Titles are preserved as
+        supplied, including surrounding whitespace; a whitespace-only title is rejected.
+        Additional properties and null values are rejected. The UTF-8 body limit is 16384 bytes.
+        Requests are not idempotent; retrying may create another task.
+      tags: [Tasks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateTask'}
+            example: {title: Review API documentation, status: todo}
+      responses:
+        '201':
+          description: Task created. Location is a relative URI for the new resource.
+          headers:
+            Location:
+              description: Relative URI of the newly created task.
+              schema: {type: string}
+              example: /tasks/751e3e2a-d601-487c-b761-0bead19be760
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Task'}
+              example:
+                id: 751e3e2a-d601-487c-b761-0bead19be760
+                title: Review API documentation
+                status: todo
+                createdAt: '2026-10-21T10:00:00.000Z'
+        '400': {$ref: '#/components/responses/InvalidJson'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '413':
+          description: PAYLOAD_TOO_LARGE — request body exceeds 16384 bytes.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example:
+                error:
+                  code: PAYLOAD_TOO_LARGE
+                  message: Request body exceeds 16384 bytes.
+                  requestId: 81f4d5e8-8c8e-4747-9f7d-b2e83ad903f7
+        '415':
+          description: UNSUPPORTED_MEDIA_TYPE — Content-Type must be application/json.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example:
+                error:
+                  code: UNSUPPORTED_MEDIA_TYPE
+                  message: 'Use Content-Type: application/json.'
+                  requestId: 81f4d5e8-8c8e-4747-9f7d-b2e83ad903f7
+        '422':
+          description: VALIDATION_FAILED — JSON was parsed, but fields failed validation.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example:
+                error:
+                  code: VALIDATION_FAILED
+                  message: Request body failed validation.
+                  requestId: 81f4d5e8-8c8e-4747-9f7d-b2e83ad903f7
+                  details:
+                    - field: title
+                      message: Use 1–120 characters with at least one non-whitespace character.
+  /tasks/{taskId}:
+    get:
+      operationId: getTask
+      summary: Get one task
+      description: A well-formed UUID that does not exist returns 404; a malformed ID returns 400.
+      tags: [Tasks]
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          description: Unique task identifier, using an RFC 4122 UUID (versions 1–5).
+          schema:
+            type: string
+            format: uuid
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+          example: 751e3e2a-d601-487c-b761-0bead19be760
+      responses:
+        '200':
+          description: The requested task.
+          headers:
+            X-Request-Id:
+              $ref: '#/components/headers/RequestId'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Task'}
+              example:
+                id: 751e3e2a-d601-487c-b761-0bead19be760
+                title: Review API documentation
+                status: todo
+                createdAt: '2026-10-21T10:00:00.000Z'
+        '400': {$ref: '#/components/responses/InvalidId'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404':
+          description: TASK_NOT_FOUND — no task has this UUID.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example:
+                error:
+                  code: TASK_NOT_FOUND
+                  message: Task not found.
+                  requestId: 81f4d5e8-8c8e-4747-9f7d-b2e83ad903f7
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: 'Local fixture only: Authorization: Bearer demo-token. Not a production credential.'
+  headers:
+    RequestId:
+      description: Correlation identifier; error bodies repeat this value.
+      schema: {type: string, format: uuid}
+      example: 81f4d5e8-8c8e-4747-9f7d-b2e83ad903f7
+  schemas:
+    CreateTask:
+      type: object
+      additionalProperties: false
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+          pattern: '\S'
+          description: At least one non-whitespace character; preserved as supplied.
+        status: {type: string, enum: [todo, done], default: todo}
+    Task:
+      type: object
+      additionalProperties: false
+      required: [id, title, status, createdAt]
+      properties:
+        id: {type: string, format: uuid, readOnly: true}
+        title: {type: string, minLength: 1, maxLength: 120, pattern: '\S'}
+        status: {type: string, enum: [todo, done]}
+        createdAt: {type: string, format: date-time, readOnly: true}
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, requestId]
+          properties:
+            code:
+              type: string
+              enum: [INVALID_QUERY, INVALID_ID, INVALID_JSON, UNAUTHORIZED, TASK_NOT_FOUND, NOT_FOUND, PAYLOAD_TOO_LARGE, UNSUPPORTED_MEDIA_TYPE, VALIDATION_FAILED]
+            message: {type: string}
+            requestId: {type: string, format: uuid}
+            details:
+              type: array
+              items:
+                type: object
+                additionalProperties: false
+                required: [field, message]
+                properties:
+                  field: {type: string}
+                  message: {type: string}
+  responses:
+    InvalidQuery:
+      description: INVALID_QUERY — limit or status is invalid.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          example:
+            error:
+              code: INVALID_QUERY
+              message: limit must be an integer between 1 and 100.
+              requestId: 81f4d5e8-8c8e-4747-9f7d-b2e83ad903f7
+    InvalidId:
+      description: INVALID_ID — taskId is not an RFC 4122 UUID (versions 1–5).
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          example:
+            error:
+              code: INVALID_ID
+              message: taskId must be a UUID.
+              requestId: 81f4d5e8-8c8e-4747-9f7d-b2e83ad903f7
+    InvalidJson:
+      description: INVALID_JSON — request body is empty or is not valid JSON.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          example:
+            error:
+              code: INVALID_JSON
+              message: Request body must contain valid JSON.
+              requestId: 81f4d5e8-8c8e-4747-9f7d-b2e83ad903f7
+    Unauthorized:
+      description: UNAUTHORIZED — bearer token is missing or invalid.
+      headers:
+        WWW-Authenticate:
+          description: Authentication scheme required by this endpoint.
+          schema: {type: string}
+          example: Bearer
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: A valid bearer token is required.
+              requestId: 81f4d5e8-8c8e-4747-9f7d-b2e83ad903f7

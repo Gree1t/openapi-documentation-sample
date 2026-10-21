@@ -1,0 +1,20 @@
+{
+  "name": "synthetic-openapi-documentation-sample",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Synthetic portfolio sample; not customer work or a production service.",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "lint:api": "redocly lint openapi.yaml",
+    "test": "node --test test/*.test.mjs",
+    "check": "npm run lint:api && npm test",
+    "build:docs": "redocly build-docs openapi.yaml --output reference.html"
+  },
+  "devDependencies": {
+    "@redocly/cli": "2.66.1",
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1",
+    "yaml": "2.8.3"
+  }
+}

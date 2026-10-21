@@ -1,0 +1,5 @@
+[
+  {"method":"GET", "path":"/tasks", "operationId":"listTasks"},
+  {"method":"POST", "path":"/tasks", "operationId":"createTask"},
+  {"method":"GET", "path":"/tasks/{taskId}", "operationId":"getTask"}
+]

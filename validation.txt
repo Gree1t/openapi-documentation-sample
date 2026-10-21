@@ -1,0 +1,160 @@
+SYNTHETIC SAMPLE VALIDATION
+Recorded: 2026-10-21 (session date)
+Runtime: Node v22.15.1, darwin 25.5.0 arm64
+Redocly CLI: 2.66.1
+
+Scope: only this fictional API; no buyer source or production endpoint was tested.
+Commands actually executed: npm run check; npm run build:docs; both curl examples in README.txt.
+
+Observed curl results on a fresh local server:
+GET /tasks?limit=20&status=todo -> HTTP 200, data contains the seed task, total 1.
+POST /tasks with the documented JSON -> HTTP 201, Location /tasks/f9e0dd63-3a6e-4a80-8545-144d85853a52.
+Returned title Review API documentation, status todo, createdAt 2026-10-21T12:58:39.900Z.
+
+CI workflow is included; a GitHub-hosted run is not claimed by this local record.
+Generated Redoc reference built successfully; output loads renderer assets from its CDN.
+
+Raw final npm run check output follows. Exit code: 0.
+
+
+> synthetic-openapi-documentation-sample@1.0.0 check
+> npm run lint:api && npm test
+
+
+> synthetic-openapi-documentation-sample@1.0.0 lint:api
+> redocly lint openapi.yaml
+
+validating openapi.yaml...
+openapi.yaml: validated in 28ms
+
+Woohoo! Your API description is valid. 🎉
+
+
+> synthetic-openapi-documentation-sample@1.0.0 test
+> node --test test/*.test.mjs
+
+TAP version 13
+# Subtest: every implemented route has the same documented operationId, with no invented routes
+ok 1 - every implemented route has the same documented operationId, with no invented routes
+  ---
+  duration_ms: 0.659625
+  type: 'test'
+  ...
+# Subtest: all references resolve locally and all media examples satisfy their schemas
+ok 2 - all references resolve locally and all media examples satisfy their schemas
+  ---
+  duration_ms: 28.187042
+  type: 'test'
+  ...
+# Subtest: actual local HTTP behavior matches documented success and error contracts
+    # Subtest: lists the documented seed task
+    ok 1 - lists the documented seed task
+      ---
+      duration_ms: 13.022583
+      type: 'test'
+      ...
+    # Subtest: creates a task with a default status and retrievable Location
+    ok 2 - creates a task with a default status and retrievable Location
+      ---
+      duration_ms: 9.657417
+      type: 'test'
+      ...
+    # Subtest: filter and limit retain the pre-limit total
+    ok 3 - filter and limit retain the pre-limit total
+      ---
+      duration_ms: 5.652084
+      type: 'test'
+      ...
+    # Subtest: 401 includes an authentication challenge
+    ok 4 - 401 includes an authentication challenge
+      ---
+      duration_ms: 2.51625
+      type: 'test'
+      ...
+    # Subtest: rejects invalid query limit=0
+    ok 5 - rejects invalid query limit=0
+      ---
+      duration_ms: 2.239542
+      type: 'test'
+      ...
+    # Subtest: rejects invalid query limit=101
+    ok 6 - rejects invalid query limit=101
+      ---
+      duration_ms: 2.570583
+      type: 'test'
+      ...
+    # Subtest: rejects invalid query limit=1.5
+    ok 7 - rejects invalid query limit=1.5
+      ---
+      duration_ms: 3.6385
+      type: 'test'
+      ...
+    # Subtest: rejects invalid query status=unknown
+    ok 8 - rejects invalid query status=unknown
+      ---
+      duration_ms: 2.661084
+      type: 'test'
+      ...
+    # Subtest: malformed UUID and missing task have different errors
+    ok 9 - malformed UUID and missing task have different errors
+      ---
+      duration_ms: 5.535208
+      type: 'test'
+      ...
+    # Subtest: invalid JSON, media type and oversized body have documented statuses
+    ok 10 - invalid JSON, media type and oversized body have documented statuses
+      ---
+      duration_ms: 5.980375
+      type: 'test'
+      ...
+    # Subtest: rejects invalid body {"title":""}
+    ok 11 - rejects invalid body {"title":""}
+      ---
+      duration_ms: 2.639667
+      type: 'test'
+      ...
+    # Subtest: rejects invalid body {"title":"   "}
+    ok 12 - rejects invalid body {"title":"   "}
+      ---
+      duration_ms: 2.653208
+      type: 'test'
+      ...
+    # Subtest: rejects invalid body {"title":null}
+    ok 13 - rejects invalid body {"title":null}
+      ---
+      duration_ms: 2.057875
+      type: 'test'
+      ...
+    # Subtest: rejects invalid body {"title":"x","unexpected":true}
+    ok 14 - rejects invalid body {"title":"x","unexpected":true}
+      ---
+      duration_ms: 1.774125
+      type: 'test'
+      ...
+    # Subtest: rejects invalid body {"title":"x","status":"pending"}
+    ok 15 - rejects invalid body {"title":"x","status":"pending"}
+      ---
+      duration_ms: 3.139833
+      type: 'test'
+      ...
+    # Subtest: title length counts Unicode code points consistently with the schema
+    ok 16 - title length counts Unicode code points consistently with the schema
+      ---
+      duration_ms: 4.033042
+      type: 'test'
+      ...
+    1..16
+ok 3 - actual local HTTP behavior matches documented success and error contracts
+  ---
+  duration_ms: 76.566291
+  type: 'test'
+  ...
+1..3
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 229.880833

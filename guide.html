@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Task Desk · API documentation sample</title>
+  <style>
+    :root{color-scheme:light;--ink:#14273a;--muted:#526678;--blue:#135fd7;--line:#dce5ed;--bg:#f4f7fb}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,sans-serif}
+    header{background:#132a43;color:white;padding:48px max(24px,calc((100vw - 1100px)/2)) 42px}
+    .eyebrow{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:#b8cde3;font-weight:700}
+    h1{font-size:clamp(32px,5vw,52px);line-height:1.1;letter-spacing:-.04em;margin:18px 0}header p{max-width:740px;color:#cbd9e7;margin:0}
+    main{max-width:1148px;margin:auto;padding:28px 24px 60px}.notice{padding:16px 20px;background:#fff6dc;border:1px solid #e7d398;border-radius:8px;font-size:14px;margin-bottom:28px}
+    nav{display:flex;gap:20px;flex-wrap:wrap;margin:22px 0}a{color:var(--blue)}header a{color:#b7d7ff}h2{font-size:24px;letter-spacing:-.02em;margin:32px 0 12px}h3{font-size:17px;margin:0 0 8px}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card,.panel{background:white;border:1px solid var(--line);border-radius:10px;padding:22px}.card p{color:var(--muted);font-size:14px;margin-bottom:0}
+    .method{font:700 12px ui-monospace,monospace;color:#14683e;background:#e4f4eb;border-radius:4px;padding:4px 7px;margin-right:8px}.post{color:#155ca5;background:#e5effd}
+    code{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.87em}p code,td code{background:#edf2f7;border-radius:3px;padding:2px 4px}pre{margin:12px 0 0;background:#102236;color:#dfeaf6;padding:20px;border-radius:8px;overflow:auto;font-size:13px;line-height:1.65}
+    .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}.small{color:var(--muted);font-size:14px}table{border-collapse:collapse;width:100%;background:white;font-size:14px}th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#eaf0f7;font-weight:650}tr:last-child td{border:0}.table-wrap{border:1px solid var(--line);border-radius:8px;overflow:auto}.pill{display:inline-block;border:1px solid #45617e;color:#cbdced;border-radius:30px;padding:4px 12px;font-size:12px;margin-top:22px}
+    ol{padding-left:22px}li{margin:7px 0}footer{margin-top:36px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
+    @media(max-width:800px){.cards,.cols{grid-template-columns:1fr}header{padding-top:32px}th,td{padding:10px}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Inspectable API documentation · sample 01</div>
+  <h1>Task Desk API</h1>
+  <p>A compact REST contract traced to runnable route handlers, with concrete examples, predictable errors and repeatable checks.</p>
+  <span class="pill">OpenAPI 3.0.3</span> <span class="pill">3 documented operations</span> <span class="pill">Local fixture only</span>
+</header>
+<main>
+  <div class="notice"><strong>Synthetic sample.</strong> This API and its data are fictional. This demonstrates the documentation process; it is not a customer's API or a completed paid assignment. No customer endpoint has been inspected.</div>
+  <nav aria-label="Guide sections"><a href="#quickstart">Quickstart</a><a href="#routes">Endpoints</a><a href="#examples">Examples</a><a href="#errors">Errors</a><a href="#verification">Verification</a><a href="openapi.yaml">OpenAPI YAML</a></nav>
+  <section id="quickstart">
+    <h2>Start in three commands</h2>
+    <pre><code>npm ci
+npm run check
+npm start</code></pre>
+    <p class="small">Requires Node.js 22.12 or later. Base URL: <code>http://127.0.0.1:4010</code>. Every operation requires <code>Authorization: Bearer demo-token</code>. This deliberately public value authenticates only the local fixture. All data resets when the server restarts.</p>
+  </section>
+  <section id="routes">
+    <h2>Endpoints</h2>
+    <div class="cards">
+      <article class="card"><h3><span class="method">GET</span><code>/tasks</code></h3><p>List in creation order. Optional <code>status=todo|done</code> and <code>limit=1…100</code> (default 20). Returns <code>data</code> plus the count before the limit. No cursor pagination.</p></article>
+      <article class="card"><h3><span class="method post">POST</span><code>/tasks</code></h3><p>Create from a JSON title and optional status. Returns <strong>201</strong> and a <code>Location</code> header. Status defaults to todo. Unknown fields and null values are rejected.</p></article>
+      <article class="card"><h3><span class="method">GET</span><code>/tasks/{taskId}</code></h3><p>Retrieve one task using a UUID. Malformed IDs return <strong>400</strong>; well-formed IDs with no task return <strong>404</strong>. UUID letter case is ignored.</p></article>
+    </div>
+  </section>
+  <section id="examples">
+    <h2>Copy, run, compare</h2>
+    <div class="cols">
+      <article class="panel"><h3>1. List open tasks</h3><pre><code>curl -i 'http://127.0.0.1:4010/tasks?limit=20&amp;status=todo' \
+  -H 'Authorization: Bearer demo-token'</code></pre><p class="small">Expected: <strong>200 OK</strong>, with one seed task on a fresh server.</p><pre><code>{
+  "data": [{
+    "id": "751e3e2a-d601-487c-b761-0bead19be760",
+    "title": "Review API documentation",
+    "status": "todo",
+    "createdAt": "2026-10-21T10:00:00.000Z"
+  }],
+  "total": 1
+}</code></pre></article>
+      <article class="panel"><h3>2. Create a task</h3><pre><code>curl -i -X POST 'http://127.0.0.1:4010/tasks' \
+  -H 'Authorization: Bearer demo-token' \
+  -H 'Content-Type: application/json' \
+  --data '{"title":"Review API documentation","status":"todo"}'</code></pre><p class="small">Expected: <strong>201 Created</strong>, <code>Location: /tasks/{new UUID}</code>. Generated ID and timestamp vary.</p><pre><code>{
+  "id": "f9e0dd63-3a6e-4a80-8545-144d85853a52",
+  "title": "Review API documentation",
+  "status": "todo",
+  "createdAt": "2026-10-21T12:58:39.900Z"
+}</code></pre></article>
+    </div>
+    <p class="small">Titles contain 1–120 Unicode code points and at least one non-whitespace character. Surrounding whitespace is preserved. Body limit: 16,384 UTF-8 bytes. Creation has no idempotency key; retrying may create duplicates.</p>
+  </section>
+  <section id="errors">
+    <h2>Errors you can act on</h2>
+    <p>All JSON errors share one envelope. <code>error.requestId</code> matches the <code>X-Request-Id</code> response header.</p>
+    <div class="table-wrap"><table><thead><tr><th>HTTP</th><th>Code</th><th>Next action</th></tr></thead><tbody>
+      <tr><td>400</td><td><code>INVALID_QUERY</code> / <code>INVALID_ID</code> / <code>INVALID_JSON</code></td><td>Correct the query, UUID or JSON syntax.</td></tr>
+      <tr><td>401</td><td><code>UNAUTHORIZED</code></td><td>Supply the fixture bearer token. The response includes <code>WWW-Authenticate: Bearer</code>.</td></tr>
+      <tr><td>404</td><td><code>TASK_NOT_FOUND</code></td><td>Check the UUID or list tasks to find an existing one.</td></tr>
+      <tr><td>413</td><td><code>PAYLOAD_TOO_LARGE</code></td><td>Reduce the request body to 16,384 bytes or less.</td></tr>
+      <tr><td>415</td><td><code>UNSUPPORTED_MEDIA_TYPE</code></td><td>Send <code>Content-Type: application/json</code>.</td></tr>
+      <tr><td>422</td><td><code>VALIDATION_FAILED</code></td><td>Correct the fields named in <code>error.details</code>.</td></tr>
+    </tbody></table></div>
+    <pre><code>{
+  "error": {
+    "code": "VALIDATION_FAILED",
+    "message": "Request body failed validation.",
+    "requestId": "81f4d5e8-8c8e-4747-9f7d-b2e83ad903f7",
+    "details": [{
+      "field": "title",
+      "message": "Use 1–120 characters with at least one non-whitespace character."
+    }]
+  }
+}</code></pre>
+    <p class="small">An unknown route returns 404 with <code>NOT_FOUND</code>. Authentication runs before parameter or body validation on known routes. Error prose may evolve; clients should branch on HTTP status and <code>error.code</code>.</p>
+  </section>
+  <section id="verification">
+    <h2>From source to a checkable contract</h2>
+    <ol>
+      <li><a href="src/routes.json">Route inventory</a> defines the three methods, paths and operation IDs; the <a href="src/server.mjs">fixture server</a> consumes it.</li>
+      <li><a href="openapi.yaml">OpenAPI YAML</a> records actual handler behavior, including defaults, bounds, headers, examples and error cases.</li>
+      <li><a href="redocly.yaml">Redocly configuration</a> makes unresolved references and invalid examples fail lint.</li>
+      <li><a href="test/contract.test.mjs">Contract tests</a> compare source routes with the spec, validate examples and actual HTTP responses against schemas, and exercise success and failure paths.</li>
+    </ol>
+    <p class="small">Run <code>npm run check</code> for lint and tests; see <a href="validation.txt">recorded validation</a>. Run <code>npm run build:docs</code> for generated Redoc reference. The sample has no production persistence, rate limiting, user accounts or external services.</p>
+  </section>
+  <footer>Fictional portfolio sample · OpenAPI 3.0.3 · Dependencies pinned in package-lock.json · No paid services used · Customer scope and source access remain to be agreed.</footer>
+</main>
+</body>
+</html>

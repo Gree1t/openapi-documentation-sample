@@ -1,0 +1,7 @@
+extends:
+  - recommended
+rules:
+  no-unresolved-refs: error
+  operation-operationId-unique: error
+  no-invalid-media-type-examples: error
+  no-invalid-parameter-examples: error
